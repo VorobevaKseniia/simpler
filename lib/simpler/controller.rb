@@ -9,6 +9,7 @@ module Simpler
       @name = extract_name
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
+      @request.params.merge!(env['simpler.params'])
     end
 
     def make_response(action)
@@ -67,6 +68,5 @@ module Simpler
       @response['Content-Type'] = 'text/plain'
       @response.write(text)
     end
-
   end
 end
