@@ -9,11 +9,13 @@ module Simpler
 
     include Singleton
 
-    attr_reader :db
+    attr_reader :db, :controller
 
     def initialize
       @router = Router.new
       @db = nil
+
+      @controller = nil
     end
 
     def bootstrap!
@@ -28,13 +30,19 @@ module Simpler
 
     def call(env)
       route = @router.route_for(env)
-      controller = route.controller.new(env)
+      return not_found if route.nil?
+
+      @controller = route.controller.new(env)
       action = route.action
 
-      make_response(controller, action)
+      make_response(@controller, action)
     end
 
     private
+
+    def not_found
+      [404, { 'Content-Type' => 'text/html' }, ["Route not found"]]
+    end
 
     def require_app
       Dir["#{Simpler.root}/app/**/*.rb"].each { |file| require file }
@@ -53,6 +61,5 @@ module Simpler
     def make_response(controller, action)
       controller.make_response(action)
     end
-
   end
 end
